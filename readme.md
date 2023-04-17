@@ -1,7 +1,6 @@
 https://github.com/github/advisory-database.git
 
-find ./CVE/* -type f -name "*.json" -exec mongoimport -d GHSA -c advisories {} \;
-
+find ./CVE/* -type f -name "*.json" -exec mongoimport -d GHSA -c advisories {} 
 
 
 goals: 
@@ -9,6 +8,8 @@ goals:
 * Advanced filtering methods (negate, group etc)
 * Select only specific fields instead of the entire document (ie only return summary)
 * Merge duplicate GHSA records (some advisories are older than others but they have the same id, we need to find a way to merge them into a single record without loosing the history of the changes from each of them)
+
+
 
 ```
 To get the index name or the index specification document for the 
@@ -22,7 +23,7 @@ db.collection.dropIndex()
 ```
 
 
-
+```
 db.advisories.find({
   "affected.package.ecosystem": "Go",
   "database_specific.cwe_ids": "CWE-78"
@@ -73,26 +74,22 @@ db.advisories.find({
   }
 ]
 
+```
 
 
 
 
-
-db.advisories.find({"done.type:": "CVSS_V3"})
-
+`db.advisories.find({"done.type:": "CVSS_V3"})`
 
 
-
-databus: try to search for done: true
-[12:27 AM]databus: or todo: true
-
-
+```
 db.advisories.find({
   "affected.package.ecosystem": "Go",
   "database_specific.aliases:": "CVE-2022-29583"
 })
+```
 
 
-
-
+```
 db.advisories.distinct("affected.package.ecosystem")
+```
