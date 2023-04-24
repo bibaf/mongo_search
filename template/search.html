@@ -1,54 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <a href="/">Back to Search</a>
     <title>Search Results</title>
+    <a href="/">Back to Search</a>
     <style>
-    /* Define styles for the table */
-    table {
-    border-collapse: collapse;
-    width: 100%;
-    max-width:  0 auto; /* Add max-width property */
-    margin: 0 auto; /* Center the table */
-    }
+        /* Define styles for the table */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width:  0 auto; /* Add max-width property */
+            margin: 0 auto; /* Center the table */
+        }
 
-    th, td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: left;
-    }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
 
-    th {
-        background-color: #4CAF50;
-        color: white;
-    }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
 
-    /* Define styles for the header and footer */
-    header, footer {
-        background-color: #333;
-        color: white;
-        text-align: center;
-        padding: 10px;
-    }
-        </style>
+        /* Define styles for the header and footer */
+        header, footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Search Results</h1>
-    <table>
+    <h1>Results</h1>
+    <form>
+        <label for="search">Search in results:</label>
+        <input type="text" id="search" name="search">
+        <input type="button" value="Filter" onclick="filterTable()">
+    </form>
+    <table id="resultsTable">
         <tr>
-            <th>aliases</th>
+            <th>CVE</th>
             <th>published</th>
             <th>details</th>
             <th>summary</th>
         </tr>
         {% for result in results %}
         <tr>
-            <td>{{ result.aliases }}</td>
+            <td>{{ result.aliases|replace("'", "") }}</td>
+
             <td>{{ result.published }}</td>
             <td>{{ result.details }}</td>
             <td>{{ result.summary }}</td>
         </tr>
         {% endfor %}
     </table>
+    <script>
+        function filterTable() {
+            var input, filter, table, tr, td, i, j, visible;
+            input = document.getElementById("search");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("resultsTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) {
+                visible = false;
+                td = tr[i].getElementsByTagName("td");
+                for (j = 0; j < td.length; j++) {
+                    if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                        visible = true;
+                        break;
+                    }
+                }
+                if (visible) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
