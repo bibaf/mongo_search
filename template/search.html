@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <style>
+        /* CSS styles go here */
+    </style>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <table>
+        <tr>
+            <th>aliases</th>
+            <th>published</th>
+            <th>details</th>
+            <th>summary</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.aliases }}</td>
+            <td>{{ result.published }}</td>
+            <td>{{ result.details }}</td>
+            <td>{{ result.summary }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
