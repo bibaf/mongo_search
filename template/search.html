@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Search Results</title>
-    <a href="/">Back to Search</a>
     <style>
         /* Define styles for the table */
         table {
@@ -42,15 +41,14 @@
     <table id="resultsTable">
         <tr>
             <th>CVE</th>
-            <th>published</th>
-            <th>details</th>
-            <th>summary</th>
+            <th>PUBLISHED</th>
+            <th>DETAILS</th>
+            <th>SUMMARY</th>
         </tr>
         {% for result in results %}
         <tr>
-            <td>{{ result.aliases|replace("'", "") }}</td>
-
-            <td>{{ result.published }}</td>
+            <td>{{ result.aliases }}</td>
+            <td>{{ result.published.split('T')[0] }}</td>
             <td>{{ result.details }}</td>
             <td>{{ result.summary }}</td>
         </tr>
