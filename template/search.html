@@ -1,82 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Search Results</title>
-    <style>
-        /* Define styles for the table */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            max-width:  0 auto; /* Add max-width property */
-            margin: 0 auto; /* Center the table */
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
+  <title>Search Results</title>
+  <style>
+    table {
+      table-layout:fixed;
+    }
+    /* Define styles for the table */
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      /* Add max-width property */
+      margin: 0 auto;
+      /* Center the table */
+    }
 
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
 
-        /* Define styles for the header and footer */
-        header, footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px;
-        }
-    </style>
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    /* Define styles for the header and footer */
+    header,
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Results</h1>
-    <form>
-        <label for="search">Search in results:</label>
-        <input type="text" id="search" name="search">
-        <input type="button" value="Filter" onclick="filterTable()">
-    </form>
-    <table id="resultsTable">
-        <tr>
-            <th>CVE</th>
-            <th>PUBLISHED</th>
-            <th>DETAILS</th>
-            <th>SUMMARY</th>
-        </tr>
-        {% for result in results %}
-        <tr>
-            <td>{{ result.aliases }}</td>
-            <td>{{ result.published.split('T')[0] }}</td>
-            <td>{{ result.details }}</td>
-            <td>{{ result.summary }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <script>
-        function filterTable() {
-            var input, filter, table, tr, td, i, j, visible;
-            input = document.getElementById("search");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("resultsTable");
-            tr = table.getElementsByTagName("tr");
-            for (i = 1; i < tr.length; i++) {
-                visible = false;
-                td = tr[i].getElementsByTagName("td");
-                for (j = 0; j < td.length; j++) {
-                    if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
-                        visible = true;
-                        break;
-                    }
-                }
-                if (visible) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
-            }
+  <h1>Results</h1>
+  <form>
+    <label for="search">Search in results:</label>
+    <input type="text" id="search" name="search">
+    <input type="button" value="Filter" onclick="filterTable()">
+  </form>
+  <table id="resultsTable">
+    <thead>
+    <tr>
+      <th>DETAILS</th>
+    </tr>
+    </thead>
+    {% for result in results %}
+    <tr>
+      <td class="toMD">
+### `{{ result.id }}`: {{ result.summary }}
+- **GHSA:** `{{ result.id }}`
+- **Published:** {{ result.published.split('T')[0] }}
+- **Aliases:** {{ result.aliases }}
+
+{{ result.details }}
+</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
+    integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    function filterTable() {
+      var input, filter, table, tr, td, i, j, visible;
+      input = document.getElementById("search");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("resultsTable");
+      tr = table.getElementsByTagName("tr");
+      for (i = 1; i < tr.length; i++) {
+        visible = false;
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+          if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
+            visible = true;
+            break;
+          }
         }
-    </script>
+        if (visible) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
+  </script>
+  <script>
+    $(document).ready(function () {
+      $(".toMD").each(function (index) {
+        markdownDoc=$(this).text();
+        $(this).html(marked.parse(markdownDoc,{mangle: false, gfm: true, headerIds: false, headerPrefix: false}))
+      });
+    });
+  </script>
 </body>
+
 </html>
