@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,9 @@
   <title>Search Results</title>
   <style>
     table {
-      table-layout:fixed;
+      table-layout: fixed;
     }
+
     /* Define styles for the table */
     table {
       border-collapse: collapse;
@@ -50,26 +52,34 @@
   </form>
   <table id="resultsTable">
     <thead>
-    <tr>
-      <th>DETAILS</th>
-    </tr>
+      <tr>
+        <th>GHSA</th>
+      </tr>
     </thead>
     {% for result in results %}
     <tr>
-      <td class="toMD">
+      <td>
+        <center><a class="action" href="?toggle=todo&id={{result._id}}">todo</a> / <a class="action"
+            href="?toggle=done&id={{result._id}}">done</a></center>
+        <div class="toMD">
 ### `{{ result.id }}`: {{ result.summary }}
 - **GHSA:** `{{ result.id }}`
 - **Published:** {{ result.published.split('T')[0] }}
 - **Aliases:** {{ result.aliases }}
+{% if result.todo %}- **`TODO`**
+{% endif %}{% if result.done %}- **`DONE`**{% endif %}
 
 {{ result.details }}
-</td>
+
+{{result.affected}}
+        </div>
+        <center><a class="action" href="/toggle?toggle=todo&id={{result._id}}">todo</a> / <a class="action" href="?toggle=done&id={{result._id}}">done</a></center>
+      </td>
     </tr>
     {% endfor %}
   </table>
-  <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
-    integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
   <script>
     function filterTable() {
       var input, filter, table, tr, td, i, j, visible;
@@ -95,10 +105,27 @@
     }
   </script>
   <script>
+
     $(document).ready(function () {
+      $(".action").on('click', function (e) {
+        e.preventDefault();
+        let url = $(this).attr('href');
+        $.post(url,
+          {
+            name: "Donald Duck",
+            city: "Duckburg"
+          },
+          function (data, status) {
+            //console.log(data);
+            location.reload();
+          });
+
+        return false
+      });
+
       $(".toMD").each(function (index) {
-        markdownDoc=$(this).text();
-        $(this).html(marked.parse(markdownDoc,{mangle: false, gfm: true, headerIds: false, headerPrefix: false}))
+        markdownDoc = $(this).text();
+        $(this).html(marked.parse(markdownDoc, { mangle: false, gfm: true, headerIds: false, headerPrefix: false }))
       });
     });
   </script>
