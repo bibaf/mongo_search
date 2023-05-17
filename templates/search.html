@@ -80,26 +80,22 @@
   </table>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
-  <script>
+ <script>
     function filterTable() {
-      var input, filter, table, tr, td, i, j, visible;
-      input = document.getElementById("search");
-      filter = input.value.toUpperCase();
-      table = document.getElementById("resultsTable");
-      tr = table.getElementsByTagName("tr");
-      for (i = 1; i < tr.length; i++) {
-        visible = false;
-        td = tr[i].getElementsByTagName("td");
-        for (j = 0; j < td.length; j++) {
-          if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
-            visible = true;
-            break;
+      var input = document.getElementById("search");
+      var filter = input.value.toUpperCase();
+      var table = document.getElementById("resultsTable");
+      var rows = table.getElementsByTagName("tr");
+
+      for (var i = 0; i < rows.length; i++) {
+        var data = rows[i].getElementsByTagName("td")[0];
+        if (data) {
+          var textValue = data.textContent || data.innerText;
+          if (textValue.toUpperCase().indexOf(filter) > -1) {
+            rows[i].style.display = "";
+          } else {
+            rows[i].style.display = "none";
           }
-        }
-        if (visible) {
-          tr[i].style.display = "";
-        } else {
-          tr[i].style.display = "none";
         }
       }
     }

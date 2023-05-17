@@ -10,12 +10,12 @@ def newEncoder(o):
         return str(o)
     return o.__str__
 
-app=Flask(__name__,template_folder='template')
+app=Flask(__name__,template_folder='templates')
 
 # Connect to MongoDB database
 client = MongoClient('mongodb://localhost:27017/')
 db = client['GHSA']
-collection = db['advisoriesMerged']  # Replace 'mycollection' with your collection name
+collection = db['advisories']  # Replace 'mycollection' with your collection name
 
 
 
