@@ -1,80 +1,185 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CHOOSE YOUR APP</title>
-    <style>
-      body {
-        background-color: #f8f8f8;
-        font-family: Arial, sans-serif;
-      }
 
-      #wrapper {
-        width: 80%;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: #fff;
-        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-        border-radius: 5px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      h1 {
-        font-size: 24px;
-        text-align: center;
-        margin-bottom: 20px;
-      }
+  <title>Search Results</title>
+  <style>
+    table {
+      table-layout: fixed;
+    }
 
-      form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
+    /* Define styles for the table */
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      /* Add max-width property */
+      margin: 0 auto;
+      /* Center the table */
+    }
 
-      label {
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
 
-      select {
-        font-size: 16px;
-        padding: 5px;
-        margin-bottom: 20px;
-        width: 100%;
-        max-width: 300px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
 
-      input[type="submit"] {
-        background-color: #0077cc;
-        color: #fff;
-        font-size: 16px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out;
-      }
+    /* Define styles for the header and footer */
+    header,
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+    .collapsible {
+      background-color: #eee;
+      color: #444;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 15px;
+    }
 
-      input[type="submit"]:hover {
-        background-color: #005fa3;
+    /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+    .active, .collapsible:hover {
+      background-color: #ccc;
+    }
+
+    /* Style the collapsible content. Note: hidden by default */
+    .content {
+      padding: 0 18px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+
+<body>
+  <center><div id="wrapper">
+    <h1>Search for exploit from list</h1>
+    <form method="get" action="/">
+      <input type="text" name="summary"/>
+      <select id="option" name="ecosystem">
+        <option></option>
+        {% for option in options %}
+        <option value="{{ option }}">{{ option }}</option>
+        {% endfor %}
+      </select>
+      <input type="submit" value="Submit" />
+    </form>
+  </div>
+
+  <h1>Results</h1></center>
+  <table id="resultsTable">
+    <thead>
+      <tr>
+        <th>GHSA</th>
+      </tr>
+    </thead>
+    {% for result in results %}
+    <tr>
+      <td>
+            <button type="button" class="collapsible"><code>{{ result.id }}: {{ result.summary }}</code></button>
+            <div class="content">
+              <center>
+                <a class="action" href="?toggle=todo&id={{result._id}}">todo</a> /
+                <a class="action" href="?toggle=done&id={{result._id}}">done</a> /
+                <a href="https://github.com/advisories/{{result.id}}" target="_blank">{{result.id}}</a>
+              </center>
+              <div class="toMD">
+### `{{ result.id }}`: {{ result.summary }}
+- **GHSA:** `{{ result.id }}`
+- **Published:** {{ result.published.split('T')[0] }}
+- **Aliases:** {{ result.aliases }}
+{% if result.todo %}- **`TODO`**
+{% endif %}{% if result.done %}- **`DONE`**{% endif %}
+
+{{ result.details }}
+
+{{result.affected}}
+        </div>
+        <center><a class="action" href="/toggle?toggle=todo&id={{result._id}}">todo</a> / <a class="action" href="?toggle=done&id={{result._id}}">done</a></center>
+      </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+  <script>
+    function filterTable() {
+      var input, filter, table, tr, td, i, j, visible;
+      input = document.getElementById("search");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("resultsTable");
+      tr = table.getElementsByTagName("tr");
+      for (i = 1; i < tr.length; i++) {
+        visible = false;
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+          if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
+            visible = true;
+            break;
+          }
+        }
+        if (visible) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
       }
-    </style>
-  </head>
-  <body>
-    <div id="wrapper">
-      <h1>Search for exploit from list</h1>
-      <form method="get" action="/">
-        <label for="option">Select an option:</label>
-        <select id="option" name="option">
-          {% for option in options %}
-          <option value="{{ option }}">{{ option }}</option>
-          {% endfor %}
-        </select>
-        <input type="submit" value="Submit" />
-      </form>
-    </div>
-  </body>
+    }
+  </script>
+  <script>
+
+    $(document).ready(function () {
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.display === "block") {
+            content.style.display = "none";
+          } else {
+            content.style.display = "block";
+          }
+        });
+      }
+      $(".action").on('click', function (e) {
+        e.preventDefault();
+        let url = $(this).attr('href');
+        $.post(url,
+          { },
+          function (data, status) {
+            //console.log(data);
+            location.reload();
+          });
+
+        return false
+      });
+
+      $(".toMD").each(function (index) {
+        markdownDoc = $(this).text();
+        console.log(markdownDoc)
+        $(this).html(marked.parse(markdownDoc, { mangle: false, gfm: true, headerIds: false, headerPrefix: false }))
+      });
+    });
+  </script>
+</body>
+
 </html>

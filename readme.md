@@ -1,9 +1,9 @@
 https://github.com/github/advisory-database.git
 
-find ./CVE/* -type f -name "*.json" -exec mongoimport -d GHSA -c advisories {} 
+find ./CVE/* -type f -name "*.json" -exec mongoimport -d GHSA -c advisories {}
 
 
-goals: 
+goals:
 
 * Advanced filtering methods (negate, group etc)
 * Select only specific fields instead of the entire document (ie only return summary)
@@ -12,11 +12,11 @@ goals:
 
 
 ```
-To get the index name or the index specification document for the 
+To get the index name or the index specification document for the
 db.collection.dropIndex()
  method, use the db.collection.getIndexes() method.
 
-The 
+The
 db.collection.dropIndex()
  method takes the following parameter:
 
