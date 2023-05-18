@@ -15,7 +15,7 @@ app=Flask(__name__,template_folder='template')
 # Connect to MongoDB database
 client = MongoClient('mongodb://localhost:27017/')
 db = client['GHSA']
-collection = db['advisoriesMerged']  # Replace 'mycollection' with your collection name
+collection = db['advisories']  # Replace 'mycollection' with your collection name
 
 
 
@@ -28,15 +28,19 @@ def do_list():
     # Define a list of options for the drop-down list
     options = ['GitHub Actions', 'Go', 'Hex', 'Maven','NuGet', 'Packagist','Pub','PyPI', 'RubyGems', 'crates.io', 'npm']
     limit=100;
+    query={};
+    if request.args.get("summary"):
+        query["summary"]={"$regex": request.args.get("summary"), "$options" :'gi'}
+        summary=request.args.get("summary")
 
     if request.args.get("limit",type=int) and request.args.get("limit",type=int)>0:
         limit=request.args.get("limit",type=int)
-    if request.args.get("option") and request.args.get("option") in options:
-        selected_option = request.args.get('option')
-        results = collection.find({"affected.package.ecosystem": selected_option}, {'id':1,'affected':1, 'aliases': 1, 'published': 1, 'details': 1, 'summary': 1,'todo':1,'done':1}).sort("published",-1).limit(limit)
-        return render_template('search.html', results=results)
+    if request.args.get("ecosystem") and request.args.get("ecosystem") in options:
+        selected_option = request.args.get('ecosystem')
+        query["affected.package.ecosystem"]=selected_option
 
-    return render_template('index.html', options=options)
+    results = collection.find(query, {'id':1,'affected':1, 'aliases': 1, 'published': 1, 'details': 1, 'summary': 1,'todo':1,'done':1}).sort("published",-1).limit(limit)
+    return render_template('index.html', results=results,options=options)
 
 @app.route('/', methods=['POST'])
 def do_toggle():
