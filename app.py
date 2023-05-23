@@ -15,7 +15,7 @@ app=Flask(__name__,template_folder='templates')
 # Connect to MongoDB database
 client = MongoClient('mongodb://localhost:27017/')
 db = client['GHSA']
-collection = db['advisories']  # Replace 'mycollection' with your collection name
+collection = db.advisories  # Replace 'mycollection' with your collection name
 
 
 
@@ -25,22 +25,42 @@ collection = db['advisories']  # Replace 'mycollection' with your collection nam
 
 @app.route('/', methods=['GET'])
 def do_list():
-    # Define a list of options for the drop-down list
-    options = ['GitHub Actions', 'Go', 'Hex', 'Maven','NuGet', 'Packagist','Pub','PyPI', 'RubyGems', 'crates.io', 'npm']
+    pagesize=100
+    page=1
+    options=collection.distinct('affected.package.ecosystem')
+    options.sort()
     limit=100;
     query={};
     if request.args.get("summary"):
-        query["summary"]={"$regex": request.args.get("summary"), "$options" :'gi'}
-        summary=request.args.get("summary")
+        query={
+            '$or':
+                [
+                    {'summary': {'$regex':  request.args.get("summary"), '$options': 'i'}},
+                    {'details': {'$regex':  request.args.get("summary"), '$options': 'i'}}
+                ]
+        }
+
+    if request.args.get("github_reviewed",type=int) and request.args.get("github_reviewed",type=int)>0:
+        query["database_specific.github_reviewed"]=(request.args.get("github_reviewed",type=int) == 1)
+
+    if request.args.get("todo",type=int) and request.args.get("todo",type=int)>=0 and request.args.get("todo",type=int)<=1:
+        todo=(request.args.get("todo",type=int) == 1)
+        query["todo"]=(request.args.get("todo",type=int) == 1)
+
+    # current page
+    if request.args.get("page",type=int) and request.args.get("page",type=int)>0:
+        page=request.args.get("page",type=int)
 
     if request.args.get("limit",type=int) and request.args.get("limit",type=int)>0:
-        limit=request.args.get("limit",type=int)
+        pagesize=request.args.get("limit",type=int)
+
     if request.args.get("ecosystem") and request.args.get("ecosystem") in options:
         selected_option = request.args.get('ecosystem')
         query["affected.package.ecosystem"]=selected_option
 
-    results = collection.find(query, {'id':1,'affected':1, 'aliases': 1, 'published': 1, 'details': 1, 'summary': 1,'todo':1,'done':1}).sort("published",-1).limit(limit)
-    return render_template('index.html', results=results,options=options)
+    print(query)
+    results = collection.find(query, {'id':1,'affected':1, 'aliases': 1, 'published': 1, 'details': 1, 'summary': 1,'todo':1,'done':1,'references':1, 'database_specific':1}).sort("published",-1).skip(pagesize*(page-1)).limit(pagesize)
+    return render_template('index.html', results=results, totals=collection.count_documents(query) ,options=options,page=page)
 
 @app.route('/', methods=['POST'])
 def do_toggle():

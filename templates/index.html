@@ -51,10 +51,22 @@
       outline: none;
       font-size: 15px;
     }
+    .bg-primary {
+      background-color:#75ff7a;
 
+    }
+    .bg-danger {
+      background-color: rgba(255, 148, 116, 0.678);
+
+    }
+    .todo {
+      background-color: #b5ffb8;
+      color: rgb(7, 99, 7);
+      font-weight: 600;
+    }
     /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
     .active, .collapsible:hover {
-      background-color: #ccc;
+      background-color: #b5ffb8;
     }
 
     /* Style the collapsible content. Note: hidden by default */
@@ -71,6 +83,12 @@
   <center><div id="wrapper">
     <h1>Search for exploit from list</h1>
     <form method="get" action="/">
+      <label for="github_reviewed">Reviewed
+        <input type="checkbox" name="github_reviewed" value="1"/>
+      </label>
+      <label for="todo">Todo
+        <input type="checkbox" name="todo" value="1"/>
+      </label>
       <input type="text" name="summary"/>
       <select id="option" name="ecosystem">
         <option></option>
@@ -82,8 +100,9 @@
     </form>
   </div>
 
-  <h1>Results</h1></center>
+  <h1>Results: <small>{{totals}}</small></h1></center>
   <table id="resultsTable">
+    <tr><td><center><a href="#" class="prev-page">Prev</a> -{{page}}- <a href="#" class="next-page">Next</a></center></td></tr>
     <thead>
       <tr>
         <th>GHSA</th>
@@ -92,14 +111,14 @@
     {% for result in results %}
     <tr>
       <td>
-            <button type="button" class="collapsible"><code>{{ result.id }}: {{ result.summary }}</code></button>
+            <button type="button" class="collapsible {% if result.database_specific.github_reviewed %}bg-primary{% else %}bg-danger{% endif %} {% if result.todo %}todo{%endif%}"><code>{{ result.id }}: {{ result.summary }}</code></button>
             <div class="content">
               <center>
                 <a class="action" href="?toggle=todo&id={{result._id}}">todo</a> /
                 <a class="action" href="?toggle=done&id={{result._id}}">done</a> /
                 <a href="https://github.com/advisories/{{result.id}}" target="_blank">{{result.id}}</a>
               </center>
-              <div class="toMD">
+{% if result.database_specific.github_reviewed %}<div class="toMD">{% else %}<pre>{% endif %}
 ### `{{ result.id }}`: {{ result.summary }}
 - **GHSA:** `{{ result.id }}`
 - **Published:** {{ result.published.split('T')[0] }}
@@ -107,15 +126,25 @@
 {% if result.todo %}- **`TODO`**
 {% endif %}{% if result.done %}- **`DONE`**{% endif %}
 
-{{ result.details }}
+{{ result.details | wordwrap }}
 
-{{result.affected}}
-        </div>
+#### Affected
+{% for affected in result.affected %}
+* {{affected.package.ecosystem}} {{affected.package.name}} {{affected.ranges}}
+{% endfor %}
+
+#### References
+
+{% for ref in result.references %}
+* **`{{ref.type}}`**: {{ref.url}}{% endfor %}
+
+{% if result.database_specific.github_reviewed %}</div>{% else %}</pre>{% endif %}
         <center><a class="action" href="/toggle?toggle=todo&id={{result._id}}">todo</a> / <a class="action" href="?toggle=done&id={{result._id}}">done</a></center>
       </div>
       </td>
     </tr>
     {% endfor %}
+    <tr><td><center><a href="#" class="prev-page">Prev</a> - <a href="#" class="next-page">Next</a></center></td></tr>
   </table>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
@@ -175,9 +204,29 @@
 
       $(".toMD").each(function (index) {
         markdownDoc = $(this).text();
-        console.log(markdownDoc)
-        $(this).html(marked.parse(markdownDoc, { mangle: false, gfm: true, headerIds: false, headerPrefix: false }))
+        //console.log(markdownDoc)
+        const renderer = new marked.Renderer();
+        renderer.link = ( href, title, text ) => `<a target="_blank" href="${ href }" title="${ title }">${ text }</a>`;
+        $(this).html(marked.parse(markdownDoc, { mangle: false, gfm: true, headerIds: false, headerPrefix: false, renderer:renderer  }))
       });
+      $(".prev-page").on('click',function(e){
+        e.preventDefault()
+        const urlParams = new URLSearchParams(window.location.search);
+        if( {{ page }} > 1 )
+        {
+          urlParams.set('page',  {{ page - 1 }});
+          window.location.search = urlParams;
+        }
+        return false;
+      });
+      $(".next-page").on('click',function(e){
+        e.preventDefault()
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page',  {{ page + 1 }});
+        window.location.search = urlParams;
+        return false;
+      });
+
     });
   </script>
 </body>
